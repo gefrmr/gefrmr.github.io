@@ -1,0 +1,16 @@
+{
+  "name": "Add to Chunks",
+  "short_name": "Chunks",
+  "start_url": "/chunks2/index.html",
+  "display": "standalone",
+  "share_target": {
+    "action": "/chunks2/index.html",
+    "method": "POST",
+    "enctype": "application/x-www-form-urlencoded"
+    "params": {
+      "text": "text",
+      "url": "url"
+    }
+  }
+}
+

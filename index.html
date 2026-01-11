@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Verwijzing naar manifest.json in de root -->
+    <link rel="manifest" href="manifest.json">
+
+    <title>Add to Chunks</title>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2rem;
+            text-align: center;
+        }
+        .status {
+            margin-top: 2rem;
+            font-size: 1.4rem;
+            color: #333;
+        }
+        #install {
+            margin-top: 2rem;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Chunks Share Target</h2>
+<p>Deze webapp ontvangt gedeelde tekst en stuurt die naar je Google Sheet.</p>
+
+<div class="status" id="status">Wachten op gedeelde tekst…</div>
+
+<button id="install" onclick="installPWA()">Installeer Add to Chunks</button>
+
+<script>
+/* -------------------------------
+   SHARE TARGET HANDLING (POST)
+--------------------------------*/
+async function handleShare() {
+    const params = new URLSearchParams(window.location.search);
+
+    const text = params.get("text") || "";
+    const url  = params.get("url")  || "";
+
+    const statusEl = document.getElementById("status");
+
+    if (!text && !url) {
+        statusEl.textContent = "Geen gedeelde tekst ontvangen.";
+        return;
+    }
+
+    statusEl.textContent = "Bezig met toevoegen…";
+
+    // 👉 VUL HIER JE EIGEN WEBHOOK-URL IN
+    const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwHOsRCzzgJIJdLbId1bBqkvIU5s2q_NZZAw7n2Hz0ztQM5FXFwCnOsuNQWanxGBKTH/exec";
+
+    try {
+        await fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body:
+                "text=" + encodeURIComponent(text) +
+                "&url="  + encodeURIComponent(url)
+        });
+
+        statusEl.textContent = "Toegevoegd aan je Google Sheet!";
+    } catch (e) {
+        statusEl.textContent = "Fout bij verzenden.";
+        console.error(e);
+    }
+}
+
+handleShare();
+</script>
+
+<script>
+/* -------------------------------
+   SERVICE WORKER REGISTRATIE
+--------------------------------*/
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js");
+}
+</script>
+
+<script>
+/* -------------------------------
+   INSTALL PROMPT (vereist voor WebAPK)
+--------------------------------*/
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById("install").style.display = "inline-block";
+});
+
+async function installPWA() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    document.getElementById("install").style.display = "none";
+}
+</script>
+
+</body>
+</html>

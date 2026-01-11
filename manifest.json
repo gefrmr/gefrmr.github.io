@@ -19,7 +19,7 @@
     }
   ],
   "share_target": {
-    "action": "/",
+    "action": "https://script.google.com/macros/s/AKfycbx1234567890/exec",
     "method": "POST",
     "enctype": "application/x-www-form-urlencoded",
     "params": {
@@ -28,6 +28,7 @@
     }
   }
 }
+
 
 
 
